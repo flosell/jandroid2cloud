@@ -81,7 +81,9 @@ public class Configuration {
 	    writer = new FileWriter(file);
 	    Properties properties = new Properties();
 	    properties.setProperty(KEY_HOST, getHost());
-	    properties.setProperty(KEY_CMD, getBrowserCMD());
+	    if (getBrowserCMD() != null) {
+		properties.setProperty(KEY_CMD, getBrowserCMD());
+	    }
 	    properties.setProperty(KEY_API_SECRET, getApiSecret());
 	    properties.setProperty(KEY_TOKEN, getToken());
 	    properties.setProperty(KEY_SECRET, getSecret());
@@ -89,11 +91,11 @@ public class Configuration {
 
 	    properties
 		    .store(writer,
-			    "This file stores the information for JAndroid2Cloud. " +
-			    "\nToken and Secret are just cached values to prevent authorization at startup.\n\n"+ 
-			    "To configure a browser other than the OS Default Browser set cmd. \n" +
-			    "It is supposed to be a command in which %url will be replaced with the URL received from the Android2Cloud server.\n" +
-			    "Example \"cmd=firefox %url\" uses firefox on a Linux System. On Windows, the full path might be required.");
+			    "This file stores the information for JAndroid2Cloud. "
+				    + "\nlastLink,Token and Secret are just cached values for convenience.\n\n"
+				    + "To configure a browser other than the OS Default Browser set cmd. \n"
+				    + "It is supposed to be a command in which %url will be replaced with the URL received from the Android2Cloud server.\n"
+				    + "Example \"cmd=firefox %url\" uses firefox on a Linux System. On Windows, the full path might be required.");
 	} catch (IOException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
@@ -107,14 +109,22 @@ public class Configuration {
 
     private Configuration() {
 	host = DEFAULT_HOST;
-	cmd = DEFAULT_FIREFOX_CMD;
+	cmd = null;
 	apiSecret = DEFAULT_API_SECRET;
 	token = "";
 	secret = "";
     }
 
     public void openURLinBrowser(String url) {
-	if (Desktop.isDesktopSupported()) {
+	if (getBrowserCMD() != null) { // TODO: add support for default when
+				       // desktop not available
+	    try {
+		Runtime.getRuntime().exec(getBrowserCMD().replace("%url", url));
+	    } catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	    }
+	} else if (Desktop.isDesktopSupported()) {
 	    try {
 		Desktop.getDesktop().browse(new URI(url));
 	    } catch (IOException e) {
@@ -125,12 +135,7 @@ public class Configuration {
 		e.printStackTrace();
 	    }
 	} else {
-	    try {
-		Runtime.getRuntime().exec(getBrowserCMD().replace("%url", url));
-	    } catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	    }
+	    System.err.println("Desktop not supported. Please set cmd manually");
 	}
     }
 

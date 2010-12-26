@@ -73,7 +73,6 @@ public class JAndroid2Cloud {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	    }
-	    System.out.println("having systray");
 	}
     }
 }

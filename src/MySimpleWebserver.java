@@ -41,6 +41,7 @@ public class MySimpleWebserver {
 	
 	try {
 	    server.start();
+	    System.out.println("Temporary server nos listening at "+getAuthAddress());
 	} catch (Exception e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
