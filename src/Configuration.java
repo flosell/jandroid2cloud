@@ -1,3 +1,4 @@
+import java.awt.Desktop;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -5,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Properties;
 
 public class Configuration {
@@ -16,7 +19,7 @@ public class Configuration {
     private static final String DEFAULT_FIREFOX_CMD = "firefox %url";
     private static final String DEFAULT_HOST = "android2cloud.appspot.com";
     private static final String DEFAULT_API_SECRET = "ySS8cOHGuNgNS9qLsxUhQBH/";
-    private static final String KEY_OLDLINK = "oldlink";
+    private static final String KEY_OLDLINK = "lastLink";
 
     private String host;
     private String cmd;
@@ -84,7 +87,13 @@ public class Configuration {
 	    properties.setProperty(KEY_SECRET, getSecret());
 	    properties.setProperty(KEY_OLDLINK, getOldlink());
 
-	    properties.store(writer, "This file stores the information for JAndroid2Cloud");
+	    properties
+		    .store(writer,
+			    "This file stores the information for JAndroid2Cloud. " +
+			    "\nToken and Secret are just cached values to prevent authorization at startup.\n\n"+ 
+			    "To configure a browser other than the OS Default Browser set cmd. \n" +
+			    "It is supposed to be a command in which %url will be replaced with the URL received from the Android2Cloud server.\n" +
+			    "Example \"cmd=firefox %url\" uses firefox on a Linux System. On Windows, the full path might be required.");
 	} catch (IOException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
@@ -105,11 +114,23 @@ public class Configuration {
     }
 
     public void openURLinBrowser(String url) {
-	try {
-	    Runtime.getRuntime().exec(getBrowserCMD().replace("%url", url));
-	} catch (IOException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
+	if (Desktop.isDesktopSupported()) {
+	    try {
+		Desktop.getDesktop().browse(new URI(url));
+	    } catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	    } catch (URISyntaxException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	    }
+	} else {
+	    try {
+		Runtime.getRuntime().exec(getBrowserCMD().replace("%url", url));
+	    } catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	    }
 	}
     }
 
