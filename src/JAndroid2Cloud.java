@@ -11,6 +11,7 @@ public class JAndroid2Cloud {
 		configuration.saveConfiguration(configFile);
 	    }
 	});
+	
 	Android2CloudServerConnection connection = new Android2CloudServerConnection(configuration);
 	System.out.println(connection.getLink());
     }
