@@ -31,12 +31,11 @@ public class Android2CloudServerConnection {
 	OAuthRequest request = new OAuthRequest(Verb.GET, url);
 	service.signRequest(token, request);
 	Response response = request.send();
-	System.out.println(response.getCode());
 
 	if (response.getBody().contains("error") && response.getBody().contains("auth")) { // TODO:
 											   // improve
 	    reauth();
-	    String result = getLink();
+	    String result = makeRequest(url);
 	    tries = 0;
 	    return result;
 	} else {

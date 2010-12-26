@@ -16,12 +16,35 @@ public class Configuration {
     private static final String DEFAULT_FIREFOX_CMD = "firefox %url";
     private static final String DEFAULT_HOST = "android2cloud.appspot.com";
     private static final String DEFAULT_API_SECRET = "ySS8cOHGuNgNS9qLsxUhQBH/";
+    private static final String KEY_OLDLINK = "oldlink";
 
     private String host;
     private String cmd;
     private String apiSecret;
     private String token;
     private String secret;
+    private String oldlink;
+
+    /**
+     * @return the oldlink
+     */
+    public String getOldlink() {
+	if (oldlink == null) {
+	    return "";
+	} else {
+	    return oldlink;
+	}
+    }
+
+    /**
+     * @param oldlink
+     *            the oldlink to set
+     */
+    public void setOldlink(String oldlink) {
+	if (oldlink != null) {
+	    this.oldlink = oldlink;
+	}
+    }
 
     public static Configuration getConfiguration(File file) {
 	Configuration config = new Configuration();
@@ -37,9 +60,10 @@ public class Configuration {
 	    config.setHost(properties.getProperty(KEY_HOST));
 	    config.setSecret(properties.getProperty(KEY_SECRET));
 	    config.setToken(properties.getProperty(KEY_TOKEN));
+	    config.setOldlink(properties.getProperty(KEY_OLDLINK));
 	} catch (FileNotFoundException e) {
 	    // TODO Auto-generated catch block
-//	    e.printStackTrace();
+	    // e.printStackTrace();
 	} catch (IOException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
@@ -47,24 +71,28 @@ public class Configuration {
 
 	return config;
     }
-    
-    public void saveConfiguration(File file)  {
+
+    public void saveConfiguration(File file) {
 	Writer writer = null;
 	try {
-	     writer = new FileWriter(file);
+	    writer = new FileWriter(file);
 	    Properties properties = new Properties();
-	    properties.setProperty(KEY_HOST,getHost());
+	    properties.setProperty(KEY_HOST, getHost());
 	    properties.setProperty(KEY_CMD, getBrowserCMD());
 	    properties.setProperty(KEY_API_SECRET, getApiSecret());
 	    properties.setProperty(KEY_TOKEN, getToken());
 	    properties.setProperty(KEY_SECRET, getSecret());
-	    
-	    properties.store(writer, "");
+	    properties.setProperty(KEY_OLDLINK, getOldlink());
+
+	    properties.store(writer, "This file stores the information for JAndroid2Cloud");
 	} catch (IOException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	} finally {
-	    try { writer.close(); } catch ( Exception e ) { } 
+	    try {
+		writer.close();
+	    } catch (Exception e) {
+	    }
 	}
     }
 
