@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="lib" path="/opt/javaLibs/commons-codec-1.4.jar"/>
+	<classpathentry kind="lib" path="/opt/javaLibs/commons-codec-1.4-javadoc.jar"/>
+	<classpathentry kind="lib" path="/opt/javaLibs/scribe-1.0.9.jar"/>
+	<classpathentry kind="lib" path="/opt/javaLibs/jetty-all-7.0.2.v20100331.jar"/>
+	<classpathentry kind="lib" path="/opt/javaLibs/servlet-api-2.5.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
