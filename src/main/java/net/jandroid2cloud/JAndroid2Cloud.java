@@ -9,7 +9,10 @@ import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
+
+import javax.imageio.ImageIO;
 
 public class JAndroid2Cloud {
     private static final File CONFIG_FILE = new File(System.getProperty("user.home")
@@ -65,15 +68,19 @@ public class JAndroid2Cloud {
 	    menu.add(exitItem);
 	    
 	    
-	    TrayIcon trayicon = new TrayIcon(Toolkit.getDefaultToolkit().getImage("logo.gif"),"JAndroid2Cloud",menu);
-	    trayicon.setImageAutoSize(true);
-	    
+	    TrayIcon trayicon;
 	    try {
+		trayicon = new TrayIcon(ImageIO.read(JAndroid2Cloud.class.getResource("/logo.gif")),"JAndroid2Cloud",menu);
+		trayicon.setImageAutoSize(true);
 		tray.add(trayicon);
+	    } catch (IOException e1) {
+		// TODO Auto-generated catch block
+		e1.printStackTrace();
 	    } catch (AWTException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	    }
+	    
 	}
     }
 }
