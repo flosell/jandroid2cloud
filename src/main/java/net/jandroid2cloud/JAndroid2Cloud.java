@@ -35,12 +35,10 @@ public class JAndroid2Cloud {
 	    String link = connection.getLink();
 	    if (!link.equals(configuration.getOldlink())) {
 		configuration.openURLinBrowser(link);
-		System.out.println((new Date()).toString() + " found new link:" + link);
+//		System.out.println((new Date()).toString() + " found new link:" + link);
 		configuration.setOldlink(link);
-		configuration.saveConfiguration(CONFIG_FILE); // TODO: only for
-							      // development
 	    } else {
-		System.out.println((new Date()).toString() + " nothing new...");
+//		System.out.println((new Date()).toString() + " nothing new...");
 	    }
 	    try {
 		Thread.sleep(15000);
