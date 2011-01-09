@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-package org.jandroid2cloud;
+package org.jandroid2cloud.connection;
  import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;

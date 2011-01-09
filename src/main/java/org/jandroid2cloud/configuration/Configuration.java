@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-package org.jandroid2cloud;
+package org.jandroid2cloud.configuration;
 
 import java.awt.Desktop;
 import java.io.BufferedInputStream;

@@ -22,11 +22,12 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-package org.jandroid2cloud;
+package org.jandroid2cloud.connection;
 
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.jandroid2cloud.configuration.Configuration;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.model.OAuthRequest;
 import org.scribe.model.Response;

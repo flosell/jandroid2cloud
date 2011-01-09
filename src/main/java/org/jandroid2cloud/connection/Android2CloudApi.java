@@ -22,7 +22,8 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-package org.jandroid2cloud;
+package org.jandroid2cloud.connection;
+import org.jandroid2cloud.configuration.Configuration;
 import org.scribe.builder.api.DefaultApi10a;
 
 

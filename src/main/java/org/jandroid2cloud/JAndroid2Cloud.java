@@ -38,6 +38,8 @@ import java.util.Date;
 
 import javax.imageio.ImageIO;
 
+import org.jandroid2cloud.configuration.Configuration;
+import org.jandroid2cloud.connection.Android2CloudServerConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

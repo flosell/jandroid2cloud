@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-package org.jandroid2cloud;
+package org.jandroid2cloud.connection;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.GAEChannel4j.IChannelHandler;
 import org.eclipse.jetty.util.ajax.JSONObjectConvertor;
+import org.jandroid2cloud.configuration.Configuration;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;

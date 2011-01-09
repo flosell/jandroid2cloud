@@ -22,9 +22,10 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-package org.jandroid2cloud;
+package org.jandroid2cloud.connection;
 
 import org.GAEChannel4j.Connection;
+import org.jandroid2cloud.configuration.Configuration;
 import org.scribe.model.Verb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
