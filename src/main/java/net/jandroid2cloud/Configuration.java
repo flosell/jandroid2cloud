@@ -51,7 +51,9 @@ public class Configuration {
     private static final String KEY_SECRET = "secret";
     private static final String KEY_TOKEN = "token";
 
-    public static Configuration getConfiguration(File file) {
+    private static Configuration INSTANCE;
+    
+    public static void initializeInstance(File file) {
 	Configuration config = new Configuration();
 
 	 Properties properties = new Properties();
@@ -77,11 +79,15 @@ public class Configuration {
 	 e.printStackTrace();
 	 }
 
-	return config;
+	INSTANCE=config;
     }
 
-    public static Configuration getDefaultConfig() {
-	return new Configuration();
+    public synchronized static Configuration getInstance() {
+	if (INSTANCE==null) {
+	    return new Configuration();
+	}else {
+	    return INSTANCE;
+	}
     }
 
     private String apiKey;

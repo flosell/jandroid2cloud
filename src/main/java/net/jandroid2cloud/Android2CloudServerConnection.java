@@ -24,39 +24,32 @@
 
 package net.jandroid2cloud;
 
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.GAEChannel4j.Connection;
-import org.scribe.builder.ServiceBuilder;
-import org.scribe.model.OAuthRequest;
-import org.scribe.model.Response;
-import org.scribe.model.Token;
 import org.scribe.model.Verb;
-import org.scribe.model.Verifier;
-import org.scribe.oauth.OAuthService;
-
+/**
+ * This is the Entry point for the Application to create a connection to the Android2Cloud server. 
+ * @author Florian Sellmayr
+ *
+ */
 public class Android2CloudServerConnection {
-    private static final Pattern LINK_PATTERN = Pattern.compile("<link>([^<]*)(?=</link>)");
     private Configuration config;
-    private String channelToken;
     private Connection connection;
     private OAuthTool oauth;
 
     public Android2CloudServerConnection(Configuration config) {
 	this.config = config;
 	this.oauth = new OAuthTool(config);
-	openChannel();
     }
-
-    private void openChannel() {
+    /**
+     * Opens a connection to the server. 
+     * This method will return immediately and perform event handling in background. 
+     */
+    public void open() {
 	if (connection == null) {
 	    String response = oauth.makeRequest("http://" + config.getHost() + "/getToken",
 		    Verb.GET, null);
 	    System.out.println("getChannelToken response:" + response);
-	    channelToken = response;
+	    String channelToken = response;
 
 	    connection = new Connection(channelToken);
 	    connection.setHandler(new ChannelHandler(config, oauth));
@@ -64,6 +57,12 @@ public class Android2CloudServerConnection {
 	} else {
 	    System.out.println("FAIL: WHAT HAPPENED"); // TODO: needed?
 	}
+    }
+    /**
+     * Closes the connection to the server and stops background-threads
+     */
+    public void close() {
+	// TODO
     }
 
 }

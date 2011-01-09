@@ -43,7 +43,8 @@ public class JAndroid2Cloud {
 	    + "/.jandroid2cloud.properties");
 
     public static void main(String[] args) {
-	final Configuration configuration = Configuration.getConfiguration(CONFIG_FILE);
+	Configuration.initializeInstance(CONFIG_FILE);
+	final Configuration configuration = Configuration.getInstance();
 	Runtime.getRuntime().addShutdownHook(new Thread() {
 	    @Override
 	    public void run() {
@@ -55,6 +56,7 @@ public class JAndroid2Cloud {
 	systemTray();
 
 	Android2CloudServerConnection connection = new Android2CloudServerConnection(configuration);
+	connection.open();
     }
 
     private static void systemTray() {

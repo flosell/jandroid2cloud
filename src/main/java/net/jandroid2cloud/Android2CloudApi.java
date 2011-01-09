@@ -27,7 +27,12 @@ import org.scribe.builder.api.DefaultApi10a;
 
 
 public class Android2CloudApi extends DefaultApi10a {
-    private String host = "android2cloud.appspot.com";
+    
+    private String host;
+
+    public Android2CloudApi() {
+	this.host=Configuration.getInstance().getHost();
+    }
     @Override
     protected String getAccessTokenEndpoint() {
 	return  "https://" + host + "/_ah/OAuthGetAccessToken";
@@ -39,5 +44,7 @@ public class Android2CloudApi extends DefaultApi10a {
 	// TODO Auto-generated method stub
 	return  "https://" + host + "/_ah/OAuthGetRequestToken";
     }
+    
+    
 
 }

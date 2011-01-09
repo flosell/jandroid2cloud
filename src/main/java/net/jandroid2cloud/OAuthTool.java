@@ -10,7 +10,11 @@ import org.scribe.model.Token;
 import org.scribe.model.Verb;
 import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
-
+/**
+ * This Class provides all necessary functionality to perform the authorisation with the server using OAuth.
+ * @author Florian Sellmayr
+ *
+ */
 public class OAuthTool {
     private OAuthService service;
     private Token token;
@@ -23,10 +27,17 @@ public class OAuthTool {
 		.apiSecret(config.getApiSecret()).build();
 	token = new Token(config.getToken(), config.getSecret());
     }
-
+    /**
+     * Performs a request to the server.
+     * @param url the URL of the request
+     * @param method GET or POST
+     * @param params additional POST data or null
+     * @return the response body from the server
+     * @throws IllegalStateException if the request was not successful after 5 tries. 
+     */
     public String makeRequest(String url, Verb method, Map<String, String> params) {
 	System.out.println("request to " + url);
-	if (tries > 5) {
+	if (tries > 5) { // TODO: make this more flexible
 	    throw new IllegalStateException("tried " + tries + " times without success. aborted"); // TODO:
 												   // improve
 	}
@@ -53,8 +64,8 @@ public class OAuthTool {
 	    return response.getBody();
 	}
     }
-
-    public void reauth() {
+    
+    private void reauth() {
 	System.out.println("reauthorizing...");
 	MySimpleWebserver server = new MySimpleWebserver();
 	service = new ServiceBuilder().provider(Android2CloudApi.class).apiKey(config.getApiKey())
