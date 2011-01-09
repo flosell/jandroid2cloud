@@ -12,18 +12,18 @@ import org.json.JSONTokener;
 import org.scribe.model.Verb;
 
 public class ChannelHandler implements IChannelHandler {
-    private Android2CloudServerConnection connection;
     private Configuration config;
+    private OAuthTool oauth;
 
-    public ChannelHandler(Android2CloudServerConnection connection, Configuration config) {
-	this.connection = connection;
+    public ChannelHandler(Configuration config, OAuthTool oauth) {
 	this.config = config;
+	this.oauth = oauth;
     }
 
     @Override
     public void open() {
 	System.out.println("successfully opened channel");
-	String username = connection.makeRequest("http://" + config.getHost() + "/connected/"
+	String username = oauth.makeRequest("http://" + config.getHost() + "/connected/"
 		+ config.getIdentifier(), Verb.POST, null);
 	System.out.println("username: " + username);
     }
@@ -51,7 +51,7 @@ public class ChannelHandler implements IChannelHandler {
 
 	    Map<String, String> params = new HashMap<String, String>();
 	    params.put("links", rawMsg);
-	    String response = connection.makeRequest("http://" + config.getHost() + "/markread",
+	    String response = oauth.makeRequest("http://" + config.getHost() + "/markread",
 		    Verb.POST, params);
 	    System.out.println("response for markread: " + response);
 	} catch (JSONException e) {

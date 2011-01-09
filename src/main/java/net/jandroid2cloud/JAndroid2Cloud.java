@@ -55,22 +55,6 @@ public class JAndroid2Cloud {
 	systemTray();
 
 	Android2CloudServerConnection connection = new Android2CloudServerConnection(configuration);
-//	while (true) {
-//	    String link = connection.getLink();
-//	    if (link !=null && !link.equals(configuration.getOldlink()) ) {
-//		configuration.openURLinBrowser(link);
-////		System.out.println((new Date()).toString() + " found new link:" + link);
-//		configuration.setOldlink(link);
-//	    } else {
-////		System.out.println((new Date()).toString() + " nothing new...");
-//	    }
-//	    try {
-//		Thread.sleep(15000);
-//	    } catch (InterruptedException e) {
-//		// TODO Auto-generated catch block
-//		e.printStackTrace();
-//	    }
-//	}
     }
 
     private static void systemTray() {
