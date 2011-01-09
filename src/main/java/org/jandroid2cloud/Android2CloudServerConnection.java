@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-package net.jandroid2cloud;
+package org.jandroid2cloud;
 
 import org.GAEChannel4j.Connection;
 import org.scribe.model.Verb;

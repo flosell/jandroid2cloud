@@ -1,4 +1,4 @@
-package net.jandroid2cloud;
+package org.jandroid2cloud;
 
 import java.util.Map;
 import java.util.Map.Entry;
