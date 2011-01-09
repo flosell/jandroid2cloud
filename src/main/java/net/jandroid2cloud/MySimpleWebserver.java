@@ -31,6 +31,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A very simple webserver designed to catch responses from oauth
@@ -41,6 +43,8 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
  */
 public class MySimpleWebserver {
     private static final String AUTH_TOKEN_KEY = "oauth_verifier";
+    private static final Logger logger = LoggerFactory.getLogger(MySimpleWebserver.class);
+    
     private String authToken=null;
     private Server server;
     public MySimpleWebserver()  {
@@ -66,10 +70,9 @@ public class MySimpleWebserver {
 	
 	try {
 	    server.start();
-	    System.out.println("Temporary server nos listening at "+getAuthAddress());
+	    logger.debug("Temporary server now listening at "+getAuthAddress());
 	} catch (Exception e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
+	    logger.error("Error while starting temporary webserver. Authorizing may not succeed",e);
 	}
     }
 
@@ -102,9 +105,9 @@ public class MySimpleWebserver {
 	try {
 	    server.stop();
 	    server.join();
+	    logger.debug("Stopped temporary server");
 	} catch (Exception e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
+	    logger.warn("Error while stopping temporary webserver. This might not have serious consequences",e);
 	}
     }
     

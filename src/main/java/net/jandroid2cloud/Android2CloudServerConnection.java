@@ -26,6 +26,8 @@ package net.jandroid2cloud;
 
 import org.GAEChannel4j.Connection;
 import org.scribe.model.Verb;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  * This is the Entry point for the Application to create a connection to the Android2Cloud server. 
  * @author Florian Sellmayr
@@ -35,8 +37,10 @@ public class Android2CloudServerConnection {
     private Configuration config;
     private Connection connection;
     private OAuthTool oauth;
-
+    private static final Logger logger = LoggerFactory
+	    .getLogger(Android2CloudServerConnection.class);
     public Android2CloudServerConnection(Configuration config) {
+	logger.debug("Creating new A2C connection");
 	this.config = config;
 	this.oauth = new OAuthTool(config);
     }
@@ -45,17 +49,19 @@ public class Android2CloudServerConnection {
      * This method will return immediately and perform event handling in background. 
      */
     public void open() {
+	logger.info("Opening connection to Android2Cloud server "+config.getHost());
 	if (connection == null) {
 	    String response = oauth.makeRequest("http://" + config.getHost() + "/getToken",
 		    Verb.GET, null);
-	    System.out.println("getChannelToken response:" + response);
+	    logger.debug("Received channelToken:"+response);
 	    String channelToken = response;
 
 	    connection = new Connection(channelToken);
 	    connection.setHandler(new ChannelHandler(config, oauth));
 	    connection.open();
+	    logger.info("Connection is up and running. Waiting for messages from server.");
 	} else {
-	    System.out.println("FAIL: WHAT HAPPENED"); // TODO: needed?
+	    logger.warn("This should not happen");
 	}
     }
     /**
@@ -63,6 +69,8 @@ public class Android2CloudServerConnection {
      */
     public void close() {
 	// TODO
+	logger.info("Closing connection");
+	logger.warn("Closing connection not yet implemented");
     }
 
 }

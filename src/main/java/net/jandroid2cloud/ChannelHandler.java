@@ -10,11 +10,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.scribe.model.Verb;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ChannelHandler implements IChannelHandler {
     private Configuration config;
     private OAuthTool oauth;
-
+    private static final Logger logger = LoggerFactory.getLogger(ChannelHandler.class);
+    
     public ChannelHandler(Configuration config, OAuthTool oauth) {
 	this.config = config;
 	this.oauth = oauth;
@@ -22,16 +25,16 @@ public class ChannelHandler implements IChannelHandler {
 
     @Override
     public void open() {
-	System.out.println("successfully opened channel");
+	logger.info("Server confirmed: Channel is open");
 	String username = oauth.makeRequest("http://" + config.getHost() + "/connected/"
 		+ config.getIdentifier(), Verb.POST, null);
-	System.out.println("username: " + username);
+	logger.debug("Using username"+username);
     }
 
     @Override
     public void message(String rawMsg) {
-	System.out.println("received a message:" + rawMsg);
-
+	logger.debug("Received message from server:"+rawMsg);
+	
 	try {
 	    JSONObject jsonMessage = new JSONObject(new JSONTokener(rawMsg));
 	    JSONObject links = (JSONObject) jsonMessage.opt("links");
@@ -53,7 +56,7 @@ public class ChannelHandler implements IChannelHandler {
 	    params.put("links", rawMsg);
 	    String response = oauth.makeRequest("http://" + config.getHost() + "/markread",
 		    Verb.POST, params);
-	    System.out.println("response for markread: " + response);
+	    logger.debug("Marked message as read");
 	} catch (JSONException e) {
 	    e.printStackTrace();
 	}
@@ -65,17 +68,18 @@ public class ChannelHandler implements IChannelHandler {
 	}
 	String url = link.getString("url");
 	System.out.println("received url: "+url);
+	logger.info("new link "+url+" received. Opening browser");
 	config.openURLinBrowser(url);
     }
 
     @Override
     public void close() {
-	System.out.println("connection has been closed");
+	logger.warn("Server closed connection");
     }
 
     @Override
     public void error(String description, int code) {
-	System.out.println("error " + code + ": " + description);
+	logger.error("error " + code + ": " + description);
     }
 
 }

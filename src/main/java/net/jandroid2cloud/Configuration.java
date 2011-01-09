@@ -36,6 +36,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Configuration {
     private static final String DEFAULT_API_KEY = "dev.android2cloud.org";
     private static final String DEFAULT_API_SECRET = "RnPKDZCnYy/ccr8STpe8ASL7";
@@ -50,7 +53,8 @@ public class Configuration {
     private static final String KEY_OLDLINK = "lastLink";
     private static final String KEY_SECRET = "secret";
     private static final String KEY_TOKEN = "token";
-
+    private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
+    
     private static Configuration INSTANCE;
     
     public static void initializeInstance(File file) {
@@ -78,8 +82,13 @@ public class Configuration {
 	 // TODO Auto-generated catch block
 	 e.printStackTrace();
 	 }
-
+	 setInstance(config);
+    }
+    
+    private static void setInstance(Configuration config) {
 	INSTANCE=config;
+	logger.info("using the following configuration:\n"+config.toString());
+	
     }
 
     public synchronized static Configuration getInstance() {
@@ -297,6 +306,16 @@ public class Configuration {
 	if (token != null) {
 	    this.token = token;
 	}
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+	return "Configuration [apiKey=" + apiKey + ", apiSecret=" + apiSecret + ", cmd=" + cmd
+		+ ", host=" + host + ", identifier=" + identifier + ", oldlink=" + oldlink
+		+ ", secret=" + secret + ", token=" + token + "]"; // TODO: improve?
     }
 
 }

@@ -38,18 +38,23 @@ import java.util.Date;
 
 import javax.imageio.ImageIO;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class JAndroid2Cloud {
     private static final File CONFIG_FILE = new File(System.getProperty("user.home")
 	    + "/.jandroid2cloud.properties");
+    private static final Logger logger = LoggerFactory.getLogger(JAndroid2Cloud.class);
 
     public static void main(String[] args) {
+	logger.info("Starting JAndroid2Cloud");
 	Configuration.initializeInstance(CONFIG_FILE);
 	final Configuration configuration = Configuration.getInstance();
 	Runtime.getRuntime().addShutdownHook(new Thread() {
 	    @Override
 	    public void run() {
+		logger.info("Detected closing of application. Saving configuration.");
 		configuration.saveConfiguration(CONFIG_FILE);
-		System.out.println("saved configuration");
 	    }
 	});
 
@@ -66,7 +71,6 @@ public class JAndroid2Cloud {
 	    PopupMenu menu = new PopupMenu();
 	    MenuItem exitItem = new MenuItem("Exit");
 	    exitItem.addActionListener(new ActionListener() {
-	        
 	        @Override
 	        public void actionPerformed(ActionEvent arg0) {
 	            System.exit(0);
@@ -82,13 +86,13 @@ public class JAndroid2Cloud {
 		trayicon.setImageAutoSize(true);
 		tray.add(trayicon);
 	    } catch (IOException e1) {
-		// TODO Auto-generated catch block
-		e1.printStackTrace();
+		logger.error("Error while setting up tray-icon",e1);
 	    } catch (AWTException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+		logger.error("Error while setting up tray-icon",e);
 	    }
-	    
+	} else {
+	    logger.error("System Tray is not supported!"); 
+	    // FIXME: what happens here?
 	}
     }
 }
