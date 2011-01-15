@@ -118,7 +118,7 @@ public class Configuration {
 
     private Configuration() {
 	host = DEFAULT_HOST;
-	cmd = null;
+	cmd = "";
 	apiSecret = DEFAULT_API_SECRET;
 	token = "";
 	secret = "";
@@ -137,7 +137,7 @@ public class Configuration {
 	return apiSecret;
     }
 
-    private String getBrowserCMD() {
+    public String getBrowserCMD() {
 	return cmd;
     }
 
@@ -172,15 +172,20 @@ public class Configuration {
     }
 
     public void openURLinBrowser(String url) {
-	if (getBrowserCMD() != null) { // TODO: add support for default when
+	boolean fail=false;
+	if (getBrowserCMD() != null && getBrowserCMD().length()>0) { // TODO: add support for default when
 				       // desktop not available
 	    try {
-		Runtime.getRuntime().exec(getBrowserCMD().replace("%url", url));
+		String cmd2 = getBrowserCMD().replace("%url", url);
+		Runtime.getRuntime().exec(cmd2);
 	    } catch (IOException e) {
-		// TODO Auto-generated catch block
 		e.printStackTrace();
+		fail=true;
 	    }
-	} else if (Desktop.isDesktopSupported()) {
+	} else {
+	    fail=true;
+	}
+	if (fail && Desktop.isDesktopSupported()) {
 	    try {
 		Desktop.getDesktop().browse(new URI(url));
 	    } catch (IOException e) {
@@ -254,6 +259,9 @@ public class Configuration {
      */
     public void setCmd(String cmd) {
 	if (cmd != null) {
+	    if (!cmd.contains("%url")) {
+		cmd += " %url";
+	    }
 	    this.cmd = cmd;
 	}
     }
@@ -317,5 +325,6 @@ public class Configuration {
 		+ ", host=" + host + ", identifier=" + identifier + ", oldlink=" + oldlink
 		+ ", secret=" + secret + ", token=" + token + "]"; // TODO: improve?
     }
+
 
 }

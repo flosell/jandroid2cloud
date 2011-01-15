@@ -40,6 +40,7 @@ import javax.imageio.ImageIO;
 
 import org.jandroid2cloud.configuration.Configuration;
 import org.jandroid2cloud.connection.Android2CloudServerConnection;
+import org.jandroid2cloud.ui.MainUI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,41 +61,12 @@ public class JAndroid2Cloud {
 	    }
 	});
 
-	systemTray();
+	MainUI mainUI = MainUI.INSTANCE;
 
-	Android2CloudServerConnection connection = new Android2CloudServerConnection(configuration);
+	Android2CloudServerConnection connection = new Android2CloudServerConnection(configuration,mainUI.getDisplay());
 	connection.open();
+	mainUI.executeEventLoop();
     }
 
-    private static void systemTray() {
-	if (SystemTray.isSupported()) {
-	    SystemTray tray = SystemTray.getSystemTray();
-	    
-	    PopupMenu menu = new PopupMenu();
-	    MenuItem exitItem = new MenuItem("Exit");
-	    exitItem.addActionListener(new ActionListener() {
-	        @Override
-	        public void actionPerformed(ActionEvent arg0) {
-	            System.exit(0);
-	        }
-	    });
-	    
-	    menu.add(exitItem);
-	    
-	    
-	    TrayIcon trayicon;
-	    try {
-		trayicon = new TrayIcon(ImageIO.read(JAndroid2Cloud.class.getResource("/logo.gif")),"JAndroid2Cloud",menu);
-		trayicon.setImageAutoSize(true);
-		tray.add(trayicon);
-	    } catch (IOException e1) {
-		logger.error("Error while setting up tray-icon",e1);
-	    } catch (AWTException e) {
-		logger.error("Error while setting up tray-icon",e);
-	    }
-	} else {
-	    logger.error("System Tray is not supported!"); 
-	    // FIXME: what happens here?
-	}
-    }
+    
 }

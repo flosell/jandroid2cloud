@@ -28,21 +28,25 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.swing.plaf.basic.BasicBorders.MarginBorder;
+
 import org.GAEChannel4j.IChannelHandler;
 import org.eclipse.jetty.util.ajax.JSONObjectConvertor;
 import org.jandroid2cloud.configuration.Configuration;
+import org.jandroid2cloud.ui.notifications.NotificationAppender;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.scribe.model.Verb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
 public class ChannelHandler implements IChannelHandler {
     private Configuration config;
     private OAuthTool oauth;
     private static final Logger logger = LoggerFactory.getLogger(ChannelHandler.class);
-    
     public ChannelHandler(Configuration config, OAuthTool oauth) {
 	this.config = config;
 	this.oauth = oauth;
@@ -50,7 +54,7 @@ public class ChannelHandler implements IChannelHandler {
 
     @Override
     public void open() {
-	logger.info("Server confirmed: Channel is open");
+	logger.info(NotificationAppender.MARKER,"Server confirmed: Channel is open");
 	String username = oauth.makeRequest("http://" + config.getHost() + "/connected/"
 		+ config.getIdentifier(), Verb.POST, null);
 	logger.debug("Using username"+username);
@@ -92,8 +96,7 @@ public class ChannelHandler implements IChannelHandler {
 	    link = link.getJSONObject("link");
 	}
 	String url = link.getString("url");
-	System.out.println("received url: "+url);
-	logger.info("new link "+url+" received. Opening browser");
+	logger.info(NotificationAppender.MARKER,"new link "+url+" received. Opening browser");
 	config.openURLinBrowser(url);
     }
 

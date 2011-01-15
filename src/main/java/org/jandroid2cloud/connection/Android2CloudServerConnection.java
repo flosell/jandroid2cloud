@@ -25,6 +25,7 @@
 package org.jandroid2cloud.connection;
 
 import org.GAEChannel4j.Connection;
+import org.eclipse.swt.widgets.Display;
 import org.jandroid2cloud.configuration.Configuration;
 import org.scribe.model.Verb;
 import org.slf4j.Logger;
@@ -38,6 +39,7 @@ public class Android2CloudServerConnection {
     private Configuration config;
     private Connection connection;
     private OAuthTool oauth;
+    private Display display;
     private static final Logger logger = LoggerFactory
 	    .getLogger(Android2CloudServerConnection.class);
     public Android2CloudServerConnection(Configuration config) {
@@ -45,6 +47,14 @@ public class Android2CloudServerConnection {
 	this.config = config;
 	this.oauth = new OAuthTool(config);
     }
+    
+    public Android2CloudServerConnection(Configuration config,Display display) {
+	logger.debug("Creating new A2C connection");
+	this.config = config;
+	this.oauth = new OAuthTool(config);
+	this.display=display;
+    }
+    
     /**
      * Opens a connection to the server. 
      * This method will return immediately and perform event handling in background. 
@@ -57,7 +67,7 @@ public class Android2CloudServerConnection {
 	    logger.debug("Received channelToken:"+response);
 	    String channelToken = response;
 
-	    connection = new Connection(channelToken);
+	    connection = new Connection(channelToken,display);
 	    connection.setHandler(new ChannelHandler(config, oauth));
 	    connection.open();
 	    logger.info("Connection is up and running. Waiting for messages from server.");
