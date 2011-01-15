@@ -36,6 +36,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
 
+import org.jandroid2cloud.ui.notifications.NotificationAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,47 +55,46 @@ public class Configuration {
     private static final String KEY_SECRET = "secret";
     private static final String KEY_TOKEN = "token";
     private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
-    
+
     private static Configuration INSTANCE;
-    
+
     public static void initializeInstance(File file) {
 	Configuration config = new Configuration();
 
-	 Properties properties = new Properties();
-	
-	 try {
-	 BufferedInputStream stream = new BufferedInputStream(new
-	 FileInputStream(file));
-	 properties.load(stream);
-	 stream.close();
-	 config.setApiSecret(properties.getProperty(KEY_API_SECRET));
-	 config.setCmd(properties.getProperty(KEY_CMD));
-	 config.setHost(properties.getProperty(KEY_HOST));
-	 config.setSecret(properties.getProperty(KEY_SECRET));
-	 config.setToken(properties.getProperty(KEY_TOKEN));
-	 config.setOldlink(properties.getProperty(KEY_OLDLINK));
-	 config.setApiKey(properties.getProperty(KEY_API_KEY));
-	 config.setIdentifier(properties.getProperty(KEY_IDENTIFIER));
-	 } catch (FileNotFoundException e) {
-	 // TODO Auto-generated catch block
-	 // e.printStackTrace();
-	 } catch (IOException e) {
-	 // TODO Auto-generated catch block
-	 e.printStackTrace();
-	 }
-	 setInstance(config);
+	Properties properties = new Properties();
+
+	try {
+	    BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file));
+	    properties.load(stream);
+	    stream.close();
+	    config.setApiSecret(properties.getProperty(KEY_API_SECRET));
+	    config.setCmd(properties.getProperty(KEY_CMD));
+	    config.setHost(properties.getProperty(KEY_HOST));
+	    config.setSecret(properties.getProperty(KEY_SECRET));
+	    config.setToken(properties.getProperty(KEY_TOKEN));
+	    config.setOldlink(properties.getProperty(KEY_OLDLINK));
+	    config.setApiKey(properties.getProperty(KEY_API_KEY));
+	    config.setIdentifier(properties.getProperty(KEY_IDENTIFIER));
+	} catch (FileNotFoundException e) {
+	    // TODO Auto-generated catch block
+	    // e.printStackTrace();
+	} catch (IOException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+	setInstance(config);
     }
-    
+
     private static void setInstance(Configuration config) {
-	INSTANCE=config;
-	logger.info("using the following configuration:\n"+config.toString());
-	
+	INSTANCE = config;
+	logger.info("using the following configuration:\n" + config.toString());
+
     }
 
     public synchronized static Configuration getInstance() {
-	if (INSTANCE==null) {
+	if (INSTANCE == null) {
 	    return new Configuration();
-	}else {
+	} else {
 	    return INSTANCE;
 	}
     }
@@ -172,31 +172,32 @@ public class Configuration {
     }
 
     public void openURLinBrowser(String url) {
-	boolean fail=false;
-	if (getBrowserCMD() != null && getBrowserCMD().length()>0) { // TODO: add support for default when
-				       // desktop not available
+	
+	boolean fail = false;
+	if (getBrowserCMD() != null && getBrowserCMD().length() > 0) { 
 	    try {
 		String cmd2 = getBrowserCMD().replace("%url", url);
 		Runtime.getRuntime().exec(cmd2);
 	    } catch (IOException e) {
-		e.printStackTrace();
-		fail=true;
+		logger.error(NotificationAppender.MARKER,"Exception while opening configured browser browser.\nSee log for details.\nTrying system standard-browser...",e);
+		fail = true;
 	    }
 	} else {
-	    fail=true;
+	    fail = true;
 	}
-	if (fail && Desktop.isDesktopSupported()) {
-	    try {
-		Desktop.getDesktop().browse(new URI(url));
-	    } catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	    } catch (URISyntaxException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+	if (fail) {
+	    if (Desktop.isDesktopSupported()) {
+		try {
+		    Desktop.getDesktop().browse(new URI(url));
+		} catch (IOException e) {
+		    logger.error(NotificationAppender.MARKER,"Exception while opening standard browser. See log for details.",e);
+		} catch (URISyntaxException e) {
+		    logger.error(NotificationAppender.MARKER,"Trying to open invalid url. See log for details.",e);
+
+		}
+	    } else {
+		logger.error(NotificationAppender.MARKER,"No valid browser command configured and not able to open standard browser");
 	    }
-	} else {
-	    System.err.println("Desktop not supported. Please set cmd manually");
 	}
     }
 
@@ -316,15 +317,17 @@ public class Configuration {
 	}
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString() {
 	return "Configuration [apiKey=" + apiKey + ", apiSecret=" + apiSecret + ", cmd=" + cmd
 		+ ", host=" + host + ", identifier=" + identifier + ", oldlink=" + oldlink
-		+ ", secret=" + secret + ", token=" + token + "]"; // TODO: improve?
+		+ ", secret=" + secret + ", token=" + token + "]"; // TODO:
+								   // improve?
     }
-
 
 }

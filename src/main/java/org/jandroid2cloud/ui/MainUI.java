@@ -43,27 +43,23 @@ public class MainUI {
 	trayItem.setText("JAndroid2Cloud");
 	trayItem.setImage(new Image(display,JAndroid2Cloud.class.getResourceAsStream("/logo.gif")));
 	final Menu menu = new Menu(shell,SWT.POP_UP);
-	MenuItem item = new MenuItem(menu,SWT.PUSH);
+	MenuItem item = new MenuItem(menu, SWT.PUSH);
+	item.setText("Configuration...");
+	item.addSelectionListener(new SelectionAdapter() {
+	    @Override
+	    public void widgetSelected(SelectionEvent e) {
+		new ConfigWindow(display);
+	    }
+	    
+	});
+
+	item = new MenuItem(menu,SWT.PUSH);
 	item.setText("Exit");
 	item.addSelectionListener(new SelectionAdapter() {
 	    @Override
 	    public void widgetSelected(SelectionEvent e) {
 		System.exit(0);
 	    }
-	});
-	final ToolTip tooltip = new ToolTip(shell, SWT.BALLOON|SWT.ICON_INFORMATION);
-	tooltip.setMessage("hello");
-	tooltip.setText("world");
-	trayItem.setToolTip(tooltip);
-	tooltip.setLocation(100,100);
-	item = new MenuItem(menu, SWT.PUSH);
-	item.setText("Helloworld");
-	item.addSelectionListener(new SelectionAdapter() {
-	    @Override
-	    public void widgetSelected(SelectionEvent e) {
-		showNotification("Hello","World text",5000);
-	    }
-
 	});
 	
 	trayItem.addMenuDetectListener(new MenuDetectListener() {
@@ -76,14 +72,20 @@ public class MainUI {
 	
     }
     
-    public void showNotification(String title,String msg, int msec) {
+    public void showNotification(String title,String msg, int msec, int iconInformation) {
 	final BalloonWindow win = new BalloonWindow(shell,SWT.TITLE);
 	Composite composite = win.getContents();
 	composite.setLayout(new FillLayout());
-	Label l = new Label(composite,SWT.CENTER);
+	Label l = new Label(composite,SWT.LEFT);
 	final Color c = new Color(shell.getDisplay(), 255, 255, 225);
 	l.setBackground(c);
 	l.setText(msg);
+	
+	if (iconInformation == SWT.ICON_INFORMATION) {
+	    win.setImage(new Image(display,JAndroid2Cloud.class.getResourceAsStream("/info.gif")));
+	}else if (iconInformation==SWT.ICON_ERROR) {
+	    win.setImage(new Image(display,JAndroid2Cloud.class.getResourceAsStream("/error.gif")));
+	}
 	
 	composite.pack(true);
 	win.setText(title);
