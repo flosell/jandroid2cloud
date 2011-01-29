@@ -33,6 +33,8 @@ import javax.swing.plaf.basic.BasicBorders.MarginBorder;
 import org.GAEChannel4j.IChannelHandler;
 import org.eclipse.jetty.util.ajax.JSONObjectConvertor;
 import org.jandroid2cloud.configuration.Configuration;
+import org.jandroid2cloud.exceptions.NetworkException;
+import org.jandroid2cloud.linkhandling.LinkQueue;
 import org.jandroid2cloud.ui.notifications.NotificationAppender;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,8 +57,13 @@ public class ChannelHandler implements IChannelHandler {
     @Override
     public void open() {
 	logger.info(NotificationAppender.MARKER,"Server confirmed: Channel is open");
-	String username = oauth.makeRequest("http://" + config.getHost() + "/connected/"
-		+ config.getIdentifier(), Verb.POST, null);
+	String username="";
+	try {
+	    username = oauth.makeRequest("http://" + config.getHost() + "/connected/"
+	    	+ config.getIdentifier(), Verb.POST, null);
+	} catch (NetworkException e) {
+	    logger.error(NotificationAppender.MARKER, "Error: Channel to server is open but connection could not be confirmed.\nNo messages will be received",e);
+	}
 	logger.debug("Using username"+username);
     }
 
@@ -88,6 +95,10 @@ public class ChannelHandler implements IChannelHandler {
 	    logger.debug("Marked message as read");
 	} catch (JSONException e) {
 	    e.printStackTrace();
+	} catch (NetworkException e) {
+	    logger.error(NotificationAppender.MARKER,"Could not mark links as read.\n" +
+	    		"You will not receive more links until that is done.\n" +
+	    		"See log for details",e);
 	}
     }
 
@@ -96,8 +107,9 @@ public class ChannelHandler implements IChannelHandler {
 	    link = link.getJSONObject("link");
 	}
 	String url = link.getString("url");
-	logger.info(NotificationAppender.MARKER,"new link "+url+" received. Opening browser");
-	config.openURLinBrowser(url);
+	logger.info(NotificationAppender.MARKER,"new link "+url+" received.");
+//	config.openURLinBrowser(url);
+	LinkQueue.INSTANCE.push(url);
     }
 
     @Override

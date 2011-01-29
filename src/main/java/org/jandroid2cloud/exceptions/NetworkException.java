@@ -22,29 +22,47 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-package org.jandroid2cloud.ui.notifications;
+package org.jandroid2cloud.exceptions;
 
-import org.eclipse.swt.SWT;
-import org.jandroid2cloud.ui.MainUI;
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.AppenderBase;
+public class NetworkException extends Exception{
+    private static final long serialVersionUID = 8610507248401277169L;
 
-public class NotificationAppender extends AppenderBase<ILoggingEvent> {
-    public static Marker MARKER = MarkerFactory.getMarker("NOTIFY");
-
-    @Override
-    protected void append(ILoggingEvent eventObject) {
-	Marker marker = eventObject.getMarker();
-	if (marker != null && marker.contains(MarkerFactory.getMarker("NOTIFY"))) {
-	    int icon = eventObject.getLevel().equals(Level.ERROR) ? SWT.ICON_ERROR
-		    : SWT.ICON_INFORMATION;
-	    MainUI.INSTANCE
-		    .showNotification("JAndroid2Cloud", eventObject.getMessage(), 5000, icon);
-	}
+    public enum Type {
+	IO, NOT_FOUND,NONE
+    }
+    private String msg;
+    private Type type;
+    
+    public NetworkException(Type type, String msg,Throwable t) {
+	super(msg,t);
+	this.type=type;
+	this.msg=msg;
     }
 
+    public NetworkException(Type type, String msg) {
+	this(type,msg,null);
+    }
+    
+    /**
+     * @return the msg
+     */
+    public String getMsg() {
+        return msg;
+    }
+
+    /**
+     * @return the type
+     */
+    public Type getType() {
+        return type;
+    }
+
+    public NetworkException(String msg) {
+	this(Type.NONE,msg,null);
+    }
+    
+    
+    
+    
 }

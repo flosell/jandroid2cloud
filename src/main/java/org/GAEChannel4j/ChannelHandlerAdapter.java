@@ -22,29 +22,19 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-package org.jandroid2cloud.ui.notifications;
+package org.GAEChannel4j;
+// TODO: document
+public class ChannelHandlerAdapter implements IChannelHandler {
 
-import org.eclipse.swt.SWT;
-import org.jandroid2cloud.ui.MainUI;
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
-
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.AppenderBase;
-
-public class NotificationAppender extends AppenderBase<ILoggingEvent> {
-    public static Marker MARKER = MarkerFactory.getMarker("NOTIFY");
-
-    @Override
-    protected void append(ILoggingEvent eventObject) {
-	Marker marker = eventObject.getMarker();
-	if (marker != null && marker.contains(MarkerFactory.getMarker("NOTIFY"))) {
-	    int icon = eventObject.getLevel().equals(Level.ERROR) ? SWT.ICON_ERROR
-		    : SWT.ICON_INFORMATION;
-	    MainUI.INSTANCE
-		    .showNotification("JAndroid2Cloud", eventObject.getMessage(), 5000, icon);
-	}
+    public void open() {
     }
 
+    public void message(String msg) {
+    }
+
+    public void close() {
+    }
+
+    public void error(String description, int code) {
+    }
 }

@@ -23,24 +23,14 @@
  ******************************************************************************/
 
 package org.jandroid2cloud;
-import java.awt.AWTException;
-import java.awt.Menu;
-import java.awt.MenuItem;
-import java.awt.PopupMenu;
-import java.awt.SystemTray;
-import java.awt.Toolkit;
-import java.awt.TrayIcon;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
-import java.util.Date;
-
-import javax.imageio.ImageIO;
 
 import org.jandroid2cloud.configuration.Configuration;
 import org.jandroid2cloud.connection.Android2CloudServerConnection;
+import org.jandroid2cloud.exceptions.NetworkException;
+import org.jandroid2cloud.linkhandling.LinkConsumer;
 import org.jandroid2cloud.ui.MainUI;
+import org.jandroid2cloud.ui.notifications.NotificationAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,11 +50,17 @@ public class JAndroid2Cloud {
 		configuration.saveConfiguration(CONFIG_FILE);
 	    }
 	});
-
+	LinkConsumer consumer = new LinkConsumer();
+	(new Thread(consumer)).start();
 	MainUI mainUI = MainUI.INSTANCE;
-
+	
 	Android2CloudServerConnection connection = new Android2CloudServerConnection(configuration,mainUI.getDisplay());
-	connection.open();
+	try {
+	    connection.open();
+	} catch (NetworkException e) {
+	    logger.error(NotificationAppender.MARKER,"Could not open connection to server.\nNo messages will be received.",e);
+	    consumer.stopConsumer();
+	}
 	mainUI.executeEventLoop();
     }
 

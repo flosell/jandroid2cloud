@@ -330,4 +330,8 @@ public class Configuration {
 								   // improve?
     }
 
+    public int getTimeBetweenLinks() {
+	return 1000; // TODO: make configurable
+    }
+
 }

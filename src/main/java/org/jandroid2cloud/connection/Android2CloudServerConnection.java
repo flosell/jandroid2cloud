@@ -27,6 +27,7 @@ package org.jandroid2cloud.connection;
 import org.GAEChannel4j.Connection;
 import org.eclipse.swt.widgets.Display;
 import org.jandroid2cloud.configuration.Configuration;
+import org.jandroid2cloud.exceptions.NetworkException;
 import org.scribe.model.Verb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +60,7 @@ public class Android2CloudServerConnection {
      * Opens a connection to the server. 
      * This method will return immediately and perform event handling in background. 
      */
-    public void open() {
+    public void open() throws NetworkException{
 	logger.info("Opening connection to Android2Cloud server "+config.getHost());
 	if (connection == null) {
 	    String response = oauth.makeRequest("http://" + config.getHost() + "/getToken",

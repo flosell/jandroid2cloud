@@ -22,29 +22,46 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-package org.jandroid2cloud.ui.notifications;
+package org.jandroid2cloud.linkhandling;
 
-import org.eclipse.swt.SWT;
-import org.jandroid2cloud.ui.MainUI;
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
+import org.jandroid2cloud.configuration.Configuration;
+import org.jandroid2cloud.ui.notifications.NotificationAppender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.AppenderBase;
-
-public class NotificationAppender extends AppenderBase<ILoggingEvent> {
-    public static Marker MARKER = MarkerFactory.getMarker("NOTIFY");
-
+public class LinkConsumer implements Runnable{
+    private static final Logger logger = LoggerFactory.getLogger(LinkConsumer.class);
+    private boolean stopped = false;
+    
+    
     @Override
-    protected void append(ILoggingEvent eventObject) {
-	Marker marker = eventObject.getMarker();
-	if (marker != null && marker.contains(MarkerFactory.getMarker("NOTIFY"))) {
-	    int icon = eventObject.getLevel().equals(Level.ERROR) ? SWT.ICON_ERROR
-		    : SWT.ICON_INFORMATION;
-	    MainUI.INSTANCE
-		    .showNotification("JAndroid2Cloud", eventObject.getMessage(), 5000, icon);
+    public void run() {
+	LinkQueue q = LinkQueue.INSTANCE;
+	Configuration config = Configuration.getInstance();
+	int sleepTime = config.getTimeBetweenLinks();
+	logger.debug("LinkConsumer running...");
+	while (!stopped ) {
+	    String url = q.pop();
+	    if (url!="") {
+		logger.info(NotificationAppender.MARKER,"Received link "+url+".\n" +
+				"Opening browser and waiting "+sleepTime/1000.0+" seconds before opening the next link");
+		config.openURLinBrowser(url);
+		try {
+		    Thread.sleep(sleepTime);
+		} catch (InterruptedException e) {
+		    logger.warn("Something interrupted the sleep between two received links.",e);
+		}
+	    }
 	}
+	logger.debug("LinkConsumer stopped...");
     }
 
+    /**
+     * Stops the consumer.
+     */
+    public void stopConsumer() {
+	logger.debug("Stopping LinkConsumer....");
+	stopped=true;
+	LinkQueue.INSTANCE.push("");
+    }
 }

@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.jandroid2cloud.configuration.Configuration;
+import org.jandroid2cloud.exceptions.NetworkException;
+import org.jandroid2cloud.exceptions.NetworkException.Type;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.model.OAuthRequest;
 import org.scribe.model.Response;
@@ -73,11 +75,10 @@ public class OAuthTool {
      * @throws IllegalStateException
      *             if the request was not successful after 5 tries.
      */
-    public String makeRequest(String url, Verb method, Map<String, String> params) {
+    public String makeRequest(String url, Verb method, Map<String, String> params) throws NetworkException{
 	logger.debug("OAuth request to " + method.name() + " " + url + " params:" + params);
 	if (tries > 5) { // TODO: make this more flexible
-	    throw new IllegalStateException("tried " + tries + " times without success. aborted"); // TODO:
-												   // improve
+	    throw new NetworkException("Could not make OAuth request to "+url+". To many authorization retries:"+tries); 
 	}
 	OAuthRequest request = new OAuthRequest(method, url);
 
@@ -99,11 +100,14 @@ public class OAuthTool {
 	    tries = 0;
 	    return result;
 	} else {
+	    if (response.getCode()==404) {
+		throw new NetworkException(Type.NOT_FOUND, "Could not execute OAuth: "+url+" not found");
+	    }
 	    return response.getBody();
 	}
     }
 
-    private void reauth() {
+    private void reauth() throws NetworkException {
 	logger.info("Authorizing application...");
 	MySimpleWebserver server = new MySimpleWebserver();
 	service = new ServiceBuilder().provider(Android2CloudApi.class).apiKey(config.getApiKey())

@@ -22,29 +22,41 @@
  * THE SOFTWARE.
  ******************************************************************************/
 
-package org.jandroid2cloud.ui.notifications;
+package org.jandroid2cloud.linkhandling;
 
-import org.eclipse.swt.SWT;
-import org.jandroid2cloud.ui.MainUI;
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
+import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.AppenderBase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class NotificationAppender extends AppenderBase<ILoggingEvent> {
-    public static Marker MARKER = MarkerFactory.getMarker("NOTIFY");
-
-    @Override
-    protected void append(ILoggingEvent eventObject) {
-	Marker marker = eventObject.getMarker();
-	if (marker != null && marker.contains(MarkerFactory.getMarker("NOTIFY"))) {
-	    int icon = eventObject.getLevel().equals(Level.ERROR) ? SWT.ICON_ERROR
-		    : SWT.ICON_INFORMATION;
-	    MainUI.INSTANCE
-		    .showNotification("JAndroid2Cloud", eventObject.getMessage(), 5000, icon);
-	}
+public class LinkQueue {
+    public static final LinkQueue INSTANCE = new LinkQueue();
+    private BlockingQueue<String> q = new LinkedBlockingQueue<String>();
+    private static final Logger logger = LoggerFactory.getLogger(LinkQueue.class);
+    
+    private LinkQueue() {
+	
     }
-
+    
+    public void push(String s) {
+	try {
+	    q.put(s);
+	} catch (InterruptedException e) {
+	    logger.error("Interrupted while pushing element in LinkQueue. This should never happen",e);
+	}
+	
+    }
+    
+    public String pop() {
+	try {
+	    return q.take();
+	} catch (InterruptedException e) {
+	    logger.error("Interrupted while popping element from LinkQueue. This should never happen",e);
+	}
+	
+	return null;
+    }
+    
 }
