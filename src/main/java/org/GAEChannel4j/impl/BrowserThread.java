@@ -73,7 +73,7 @@ public class BrowserThread extends Thread {
 	    display = Display.getDefault();
 	}
 	shell = new Shell(display);
-	final Browser browser = new Browser(shell, SWT.MOZILLA);
+	final Browser browser = new Browser(shell,SWT.NONE);
 	String gaeChannelScript = copyChannelScriptToTmp();
 	logger.debug("main file at "+gaeChannelScript);
 	browser.setUrl(gaeChannelScript);

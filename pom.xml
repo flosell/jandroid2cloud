@@ -18,7 +18,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jandroid2cloud</groupId>
 	<artifactId>jandroid2cloud</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.2alpha</version>
 	<properties>
 		<swt.artifactId>swt-gtk-linux</swt.artifactId>
 		<swt.classifier>x86</swt.classifier>
@@ -27,6 +27,7 @@
 	</properties>
 	<build>
 		<plugins>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -74,7 +75,18 @@
 					<descriptorRefs>
 						<descriptorRef>bin</descriptorRef>
 					</descriptorRefs>
+					<finalName>${project.artifactId}-${project.version}-${os}_${swt.classifier}</finalName>
 				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- append to the packaging phase. -->
+						<goals>
+							<goal>single</goal> <!-- goals == mojos -->
+						</goals>
+					</execution>
+				</executions>
+
 			</plugin>
 
 		</plugins>
