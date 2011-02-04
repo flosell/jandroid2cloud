@@ -24,9 +24,23 @@
 
 package org.GAEChannel4j;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+
 import org.GAEChannel4j.impl.BrowserThread;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.browser.BrowserFunction;
+import org.eclipse.swt.browser.ProgressEvent;
+import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.jandroid2cloud.ui.GenericEventLoopThread;
+import org.jandroid2cloud.ui.notifications.NotificationAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +48,8 @@ public class Connection {
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
     private IChannelHandler handler = new ChannelHandlerAdapter();
     private String token;
-    private BrowserThread thread;
     private Display display;
+    private boolean executed=false;
 
     /**
      * Creates a new Connection with the given token. This is just
@@ -61,16 +75,12 @@ public class Connection {
      * successful, use respective handler.
      */
     public void open() {
-	if (display != null) {
-	    thread = new BrowserThread(handler, token, display);
-	    thread.run();
-	} else {
+	if (display == null) {
+	    // there exists no external event loop. we create out own:
 	    GenericEventLoopThread eventLoop = new GenericEventLoopThread();
 	    eventLoop.start();
-	    thread = new BrowserThread(handler, token,eventLoop.getDisplay());
-	    thread.run(); // TODO: remove thread part from browserthread
-
 	}
+	openConnectionInternal();
 	logger.debug("Started background handler to handle channelevents");
     }
 
@@ -78,13 +88,134 @@ public class Connection {
      * Stops the background thread. After that, no more events will happen.
      */
     public void close() {
-	thread.stopThread();
 	logger.debug("stopped events");
 	// TODO: translate to real JS call?
     }
 
+    /**
+     * Sets the handler which is responsible for handling all channel events.
+     * @param handler the handler. cannot be null. If you need a quiet handler, use {@link ChannelHandlerAdapter}
+     * @throws IllegalArgumentException if the handler is null. 
+     */
     public void setHandler(IChannelHandler handler) {
+	if (handler == null) {
+	    throw new IllegalArgumentException("handler cannot be null");
+	}
 	this.handler = handler;
+    }
+    
+    /**
+     * This method really opens the connection to the server.
+     */
+    private void openConnectionInternal() {
+	if (display == null) {
+	    display = Display.getDefault();
+	}
+	display.syncExec(new Runnable() {
+
+	    @Override
+	    public void run() {
+		Shell shell = new Shell(display);
+		final Browser browser = new Browser(shell, SWT.NONE);
+		String gaeChannelScript = copyChannelScriptToTmp();
+		logger.debug("main file at " + gaeChannelScript);
+		browser.setUrl(gaeChannelScript);
+		browser.addProgressListener(new ProgressListener() {
+
+		    public void completed(ProgressEvent arg0) {
+			if (!executed) {
+			    executed = browser.execute(getScript(token));
+			    logger.debug("executed channel-api calls to set up functionality. success?"
+				    + executed);
+			}
+		    }
+
+		    public void changed(ProgressEvent arg0) {
+			// TODO Auto-generated method stub
+
+		    }
+		});
+
+		new BrowserFunction(browser, "open") {
+		    public Object function(Object[] arg0) {
+			handler.open();
+			return super.function(arg0);
+		    }
+		};
+
+		new BrowserFunction(browser, "message") {
+		    public Object function(Object[] arguments) {
+			handler.message((String) arguments[0]);
+			return super.function(arguments);
+		    }
+		};
+
+		new BrowserFunction(browser, "error") {
+
+		    public Object function(Object[] arguments) {
+			logger.error("error msg from server. arguments: " + arguments);
+			String desc = "";
+			if (arguments.length > 0) {
+			    desc = (String) arguments[0];
+			}
+			logger.debug("error: got desc:" + desc);
+			int code = -1;
+			if (arguments.length > 1) {
+			    try {
+				code = Integer.parseInt((String) arguments[1]);
+			    } catch (Exception e) {
+				logger.error("somethings wrong with getting the error code.", e);
+			    }
+			}
+			logger.debug("got code:" + code);
+			handler.error(desc, code);
+			logger.debug("handeled error");
+			return super.function(arguments);
+		    }
+		};
+
+		new BrowserFunction(browser, "close") {
+		    public Object function(Object[] arguments) {
+			handler.close();
+			return super.function(arguments);
+		    }
+		};
+	    }
+	});
+    }
+    
+    /**
+     * Copys the channel script to a temproary file
+     * 
+     * @return the file name of the temporary file.
+     */
+    private String copyChannelScriptToTmp() {
+	StringBuilder b = new StringBuilder();
+	InputStream is = Connection.class.getResourceAsStream("/mainfile.html");
+	BufferedReader bReader = new BufferedReader(new InputStreamReader(is));
+	try {
+	    File tmpFile = File.createTempFile("gaeChannelScript", ".html");
+	    tmpFile.deleteOnExit();
+	    PrintStream out = new PrintStream(tmpFile);
+	    while (bReader.ready()) {
+		out.println(bReader.readLine());
+	    }
+	    return tmpFile.getAbsolutePath();
+	} catch (IOException e) {
+	    logger.error(
+		    NotificationAppender.MARKER,
+		    "Could not read Channels Handler file.\nConnection will not work. See logs for details",
+		    e);
+	}
+	return null;
+    }
+
+    private String getScript(String token) {
+	return "channel = new goog.appengine.Channel(\"" + token + "\");\n"
+		+ "socket = channel.open();\n" + "socket.onopen = function() { open(); };\n"
+		+ "socket.onmessage = function(m) { message(m.data); };\n"
+		+ "socket.onerror = function(e) { error(e.description,e.code); };\n"
+		+ "socket.onclose = function() { close(); };";
     }
 
 }
