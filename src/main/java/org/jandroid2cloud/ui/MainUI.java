@@ -45,6 +45,7 @@ import org.eclipse.swt.widgets.ToolTip;
 import org.eclipse.swt.widgets.Tray;
 import org.eclipse.swt.widgets.TrayItem;
 import org.jandroid2cloud.JAndroid2Cloud;
+import org.jandroid2cloud.ui.notifications.NotificationAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,6 +94,17 @@ public class MainUI {
 		new ConfigWindow(display);
 	    }
 
+	});
+	
+	item = new MenuItem(menu, SWT.PUSH);
+	item.setText("Reconnect");
+	item.addSelectionListener(new SelectionAdapter() {
+	    @Override
+	    public void widgetSelected(SelectionEvent e) {
+		logger.info(NotificationAppender.MARKER,"Reconnecting now");
+		JAndroid2Cloud.connection.close();
+		JAndroid2Cloud.connection.open();
+	    }
 	});
 
 	item = new MenuItem(menu, SWT.PUSH);

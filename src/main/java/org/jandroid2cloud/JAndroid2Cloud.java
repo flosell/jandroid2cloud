@@ -47,7 +47,7 @@ public class JAndroid2Cloud {
     private static final File CONFIG_FILE = new File(System.getProperty("user.home")
 	    + "/.jandroid2cloud.properties");
     private static final Logger logger = LoggerFactory.getLogger(JAndroid2Cloud.class);
-
+    public static Android2CloudServerConnection connection; 
     public static void main(String[] args) {
 	configureLogger(args);
 	logger.info("Starting JAndroid2Cloud");
@@ -69,23 +69,9 @@ public class JAndroid2Cloud {
 	Thread linkConsumerThread = new Thread(consumer,"Link Consumer");
 	linkConsumerThread.setDaemon(true);
 	linkConsumerThread.start();
+	connection = new Android2CloudServerConnection(configuration,mainUI.getDisplay());
+	connection.open();
 	
-	Android2CloudServerConnection connection = new Android2CloudServerConnection(configuration,mainUI.getDisplay());
-	
-	boolean connected=false;
-	while (!connected)
-	try {
-	    connection.open();
-	    connected=true;
-	} catch (NetworkException e) {
-	    long sleeptime = configuration.getTimeBetweenReconnects();
-	    logger.error(NotificationAppender.MARKER,"Could not open connection to server.\nTrying again in "+sleeptime/1000+" seconds",e);
-	    try {
-		Thread.sleep(sleeptime);
-	    } catch (InterruptedException e1) {
-		logger.warn("Sleep between two connection results was interrupted. This is strange but should not be a problem",e1);
-	    }
-	}
     }
 
     private static void configureLogger(String[] args) {

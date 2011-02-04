@@ -50,6 +50,7 @@ public class Connection {
     private String token;
     private Display display;
     private boolean executed=false;
+    private Shell shell;
 
     /**
      * Creates a new Connection with the given token. This is just
@@ -88,8 +89,9 @@ public class Connection {
      * Stops the background thread. After that, no more events will happen.
      */
     public void close() {
-	logger.debug("stopped events");
-	// TODO: translate to real JS call?
+	shell.dispose();
+	logger.debug("Disposed browser shell");
+	executed=false;
     }
 
     /**
@@ -112,10 +114,9 @@ public class Connection {
 	    display = Display.getDefault();
 	}
 	display.syncExec(new Runnable() {
-
 	    @Override
 	    public void run() {
-		Shell shell = new Shell(display);
+		shell = new Shell(display);
 		final Browser browser = new Browser(shell, SWT.NONE);
 		String gaeChannelScript = copyChannelScriptToTmp();
 		logger.debug("main file at " + gaeChannelScript);
@@ -190,7 +191,6 @@ public class Connection {
      * @return the file name of the temporary file.
      */
     private String copyChannelScriptToTmp() {
-	StringBuilder b = new StringBuilder();
 	InputStream is = Connection.class.getResourceAsStream("/mainfile.html");
 	BufferedReader bReader = new BufferedReader(new InputStreamReader(is));
 	try {
