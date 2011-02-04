@@ -56,7 +56,8 @@ public class JAndroid2Cloud {
 	MainUI mainUI = MainUI.getInstance();
 	final Configuration configuration = Configuration.getInstance();
 	
-	Runtime.getRuntime().addShutdownHook(new Thread() {
+	Runtime.getRuntime().addShutdownHook(new Thread("Cleanup Thread") {
+	    
 	    @Override
 	    public void run() {
 		logger.info("Detected closing of application. Saving configuration.");
