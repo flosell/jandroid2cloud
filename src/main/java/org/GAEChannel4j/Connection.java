@@ -26,6 +26,7 @@ package org.GAEChannel4j;
 
 import org.GAEChannel4j.impl.BrowserThread;
 import org.eclipse.swt.widgets.Display;
+import org.jandroid2cloud.ui.GenericEventLoopThread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,8 +65,10 @@ public class Connection {
 	    thread = new BrowserThread(handler, token, display);
 	    thread.run();
 	} else {
-	    thread = new BrowserThread(handler, token);
-	    thread.start();
+	    GenericEventLoopThread eventLoop = new GenericEventLoopThread();
+	    eventLoop.start();
+	    thread = new BrowserThread(handler, token,eventLoop.getDisplay());
+	    thread.run(); // TODO: remove thread part from browserthread
 
 	}
 	logger.debug("Started background handler to handle channelevents");

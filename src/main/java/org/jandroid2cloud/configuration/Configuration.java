@@ -334,4 +334,8 @@ public class Configuration {
 	return 1000; // TODO: make configurable
     }
 
+    public long getTimeBetweenReconnects() {
+	return 60000;
+    }
+
 }

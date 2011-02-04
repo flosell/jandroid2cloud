@@ -24,6 +24,8 @@
 
 package org.jandroid2cloud.ui;
 
+import java.util.concurrent.Semaphore;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MenuDetectEvent;
 import org.eclipse.swt.events.MenuDetectListener;
@@ -50,14 +52,30 @@ import com.novocode.naf.swt.custom.BalloonWindow;
 
 public class MainUI {
     private static final Logger logger = LoggerFactory.getLogger(MainUI.class);
-    public static MainUI INSTANCE = new MainUI();
+    private static MainUI INSTANCE;
     private Display display;
     private Tray tray;
     private Shell shell;
-
+    private GenericEventLoopThread eventLoop;
+    
     private MainUI() {
-	display = Display.getDefault();
-	createSystemTray();
+	eventLoop = new GenericEventLoopThread();
+	eventLoop.start();
+	display=eventLoop.getDisplay();
+	display.syncExec(new Runnable() {
+	    @Override
+	    public void run() {
+		createSystemTray();
+		
+	    }
+	});
+    }
+    
+    public synchronized static MainUI getInstance() {
+	if (INSTANCE==null) {
+	    INSTANCE=new MainUI();
+	}
+	return INSTANCE;
     }
 
     private void createSystemTray() {
@@ -82,12 +100,13 @@ public class MainUI {
 	item.addSelectionListener(new SelectionAdapter() {
 	    @Override
 	    public void widgetSelected(SelectionEvent e) {
-		System.exit(0);
+		stopMainUI();
 	    }
 	});
+	
+	
 
 	trayItem.addMenuDetectListener(new MenuDetectListener() {
-
 	    @Override
 	    public void menuDetected(MenuDetectEvent e) {
 		menu.setVisible(true);
@@ -96,83 +115,52 @@ public class MainUI {
 
     }
 
-    public void showNotification(String title, String msg, int msec, int iconInformation) {
-	final BalloonWindow win = new BalloonWindow(shell, SWT.TITLE);
-	Composite composite = win.getContents();
-	composite.setLayout(new FillLayout());
-	Label l = new Label(composite, SWT.LEFT);
-	final Color c = new Color(shell.getDisplay(), 255, 255, 225);
-	l.setBackground(c);
-	l.setText(msg);
-
-	if (iconInformation == SWT.ICON_INFORMATION) {
-	    win.setImage(new Image(display, JAndroid2Cloud.class.getResourceAsStream("/info.gif")));
-	} else if (iconInformation == SWT.ICON_ERROR) {
-	    win.setImage(new Image(display, JAndroid2Cloud.class.getResourceAsStream("/error.gif")));
-	}
-
-	composite.pack(true);
-	win.setText(title);
-
-	display.timerExec(msec, new Runnable() {
+    public void showNotification(final String title, final String msg, final int msec,
+	    final int iconInformation) {
+	display.asyncExec(new Runnable() {
+	    @Override
 	    public void run() {
-		win.close();
+		final BalloonWindow win = new BalloonWindow(shell, SWT.TITLE);
+		Composite composite = win.getContents();
+		composite.setLayout(new FillLayout());
+		Label l = new Label(composite, SWT.LEFT);
+		final Color c = new Color(shell.getDisplay(), 255, 255, 225);
+		l.setBackground(c);
+		l.setText(msg);
+
+		if (iconInformation == SWT.ICON_INFORMATION) {
+		    win.setImage(new Image(display, JAndroid2Cloud.class
+			    .getResourceAsStream("/info.gif")));
+		} else if (iconInformation == SWT.ICON_ERROR) {
+		    win.setImage(new Image(display, JAndroid2Cloud.class
+			    .getResourceAsStream("/error.gif")));
+		}
+
+		composite.pack(true);
+		win.setText(title);
+
+		display.timerExec(msec, new Runnable() {
+		    public void run() {
+			win.close();
+		    }
+		});
+
+		Point position = new Point(display.getBounds().width, display.getBounds().height);
+		logger.debug(
+			"Showing notification at position: {}. Title:{} Message: {} Showing for {} milliseconds. ",
+			new Object[] { position, title, msg, msec });
+		win.setLocation(position);
+		win.open();
 	    }
+
 	});
-
-	Point position = new Point(display.getBounds().width, display.getBounds().height);
-	logger.debug(
-		"Showing notification at position: {}. Title:{} Message: {} Showing for {} milliseconds. ",
-		new Object[] { position, title, msg, msec });
-	win.setLocation(position);
-
-	win.open();
     }
-
-    // private static void createSystemTray() {
-    // if (SystemTray.isSupported()) {
-    // SystemTray tray = SystemTray.getSystemTray();
-    //
-    // PopupMenu menu = new PopupMenu();
-    // MenuItem exitItem = new MenuItem("Exit");
-    // exitItem.addActionListener(new ActionListener() {
-    // @Override
-    // public void actionPerformed(ActionEvent arg0) {
-    // System.exit(0);
-    // }
-    // });
-    //
-    // menu.add(exitItem);
-    //
-    //
-    // TrayIcon trayicon;
-    // try {
-    // trayicon = new
-    // TrayIcon(ImageIO.read(JAndroid2Cloud.class.getResource("/logo.gif")),"JAndroid2Cloud",menu);
-    // trayicon.setImageAutoSize(true);
-    // tray.add(trayicon);
-    // } catch (IOException e1) {
-    // logger.error("Error while setting up tray-icon",e1);
-    // } catch (AWTException e) {
-    // logger.error("Error while setting up tray-icon",e);
-    // }
-    // } else {
-    // logger.error("System Tray is not supported!");
-    // // FIXME: what happens here?
-    // }
-    // }
 
     public Display getDisplay() {
 	return display;
     }
 
-    public void executeEventLoop() {
-	while (!tray.isDisposed()) {
-//	    logger.debug("In main event loop");
-	    if (!display.readAndDispatch()) {
-		display.sleep();
-	    }
-	}
-	display.dispose();
+    public void stopMainUI() {
+	eventLoop.stopEventLoop();
     }
 }

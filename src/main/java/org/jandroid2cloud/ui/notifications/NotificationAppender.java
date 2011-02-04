@@ -42,7 +42,7 @@ public class NotificationAppender extends AppenderBase<ILoggingEvent> {
 	if (marker != null && marker.contains(MarkerFactory.getMarker("NOTIFY"))) {
 	    int icon = eventObject.getLevel().equals(Level.ERROR) ? SWT.ICON_ERROR
 		    : SWT.ICON_INFORMATION;
-	    MainUI.INSTANCE
+	    MainUI.getInstance()
 		    .showNotification("JAndroid2Cloud", eventObject.getMessage(), 5000, icon);
 	}
     }

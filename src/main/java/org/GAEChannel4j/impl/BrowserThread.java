@@ -62,7 +62,7 @@ public class BrowserThread extends Thread {
     }
 
     public BrowserThread(IChannelHandler handler, String token, Display display) {
-	this(handler,token);
+	this(handler, token);
 	this.display = display;
 	this.ownDisplay = false;
     }
@@ -72,103 +72,114 @@ public class BrowserThread extends Thread {
 	if (display == null) {
 	    display = Display.getDefault();
 	}
-	shell = new Shell(display);
-	final Browser browser = new Browser(shell,SWT.NONE);
-	String gaeChannelScript = copyChannelScriptToTmp();
-	logger.debug("main file at "+gaeChannelScript);
-	browser.setUrl(gaeChannelScript);
-	browser.addProgressListener(new ProgressListener() {
+	display.syncExec(new Runnable() {
 
-	    public void completed(ProgressEvent arg0) {
-		if (!executed) {
-		    executed = browser.execute(getScript(token));
-		    logger.debug("executed channel-api calls to set up functionality. success?"
-			    + executed);
+	    @Override
+	    public void run() {
+		shell = new Shell(display);
+		final Browser browser = new Browser(shell, SWT.NONE);
+		String gaeChannelScript = copyChannelScriptToTmp();
+		logger.debug("main file at " + gaeChannelScript);
+		browser.setUrl(gaeChannelScript);
+		browser.addProgressListener(new ProgressListener() {
+
+		    public void completed(ProgressEvent arg0) {
+			if (!executed) {
+			    executed = browser.execute(getScript(token));
+			    logger.debug("executed channel-api calls to set up functionality. success?"
+				    + executed);
+			}
+		    }
+
+		    public void changed(ProgressEvent arg0) {
+			// TODO Auto-generated method stub
+
+		    }
+		});
+
+		BrowserFunction fun = new BrowserFunction(browser, "open") {
+		    public Object function(Object[] arg0) {
+			handler.open();
+			return super.function(arg0);
+		    }
+		};
+
+		new BrowserFunction(browser, "message") {
+		    public Object function(Object[] arguments) {
+			handler.message((String) arguments[0]);
+			return super.function(arguments);
+		    }
+		};
+
+		new BrowserFunction(browser, "error") {
+
+		    public Object function(Object[] arguments) {
+			logger.error("error msg from server. arguments: " + arguments);
+			String desc = "";
+			if (arguments.length > 0) {
+			    desc = (String) arguments[0];
+			}
+			logger.debug("error: got desc:" + desc);
+			int code = -1;
+			if (arguments.length > 1) {
+			    try {
+				code = Integer.parseInt((String) arguments[1]);
+			    } catch (Exception e) {
+				logger.error("somethings wrong with getting the error code.", e);
+			    }
+			}
+			logger.debug("got code:" + code);
+			handler.error(desc, code);
+			logger.debug("handeled error");
+			return super.function(arguments);
+		    }
+		};
+
+		new BrowserFunction(browser, "close") {
+		    public Object function(Object[] arguments) {
+			handler.close();
+			return super.function(arguments);
+		    }
+		};
+
+		shell.setLayout(new FillLayout());
+		// shell.open();
+		if (ownDisplay) {
+		    logger.debug("starting own event thread");
+		    while (!shell.isDisposed()) {
+			if (!display.readAndDispatch()) {
+			    // If no more entries in event queue
+			    display.sleep();
+			}
+		    }
+		    display.dispose();
 		}
-	    }
-
-	    public void changed(ProgressEvent arg0) {
-		// TODO Auto-generated method stub
-
 	    }
 	});
-
-	BrowserFunction fun = new BrowserFunction(browser, "open") {
-	    public Object function(Object[] arg0) {
-		handler.open();
-		return super.function(arg0);
-	    }
-	};
-
-	new BrowserFunction(browser, "message") {
-	    public Object function(Object[] arguments) {
-		handler.message((String) arguments[0]);
-		return super.function(arguments);
-	    }
-	};
-
-	new BrowserFunction(browser, "error") {
-
-	    public Object function(Object[] arguments) {
-		logger.error("error msg from server. arguments: "+arguments);
-		String desc = "";
-		if (arguments.length>0) {
-		    desc = (String) arguments[0];
-		}
-		logger.debug("error: got desc:"+desc);
-		int code = -1;
-		if (arguments.length>1) { 
-		    try {
-		    code = Integer.parseInt((String) arguments[1]);
-		    } catch (Exception e) {
-			logger.error("somethings wrong with getting the error code.",e);
-		    }
-		}
-		logger.debug("got code:"+code);
-		handler.error(desc, code);
-		logger.debug("handeled error");
-		return super.function(arguments);
-	    }
-	};
-
-	new BrowserFunction(browser, "close") {
-	    public Object function(Object[] arguments) {
-		handler.close();
-		return super.function(arguments);
-	    }
-	};
-
-	shell.setLayout(new FillLayout());
-	// shell.open();
-	if (ownDisplay) {
-	    logger.debug("starting own event thread");
-	    while (!shell.isDisposed()) {
-		if (!display.readAndDispatch()) {
-		    // If no more entries in event queue
-		    display.sleep();
-		}
-	    }
-	    display.dispose();
-	}
     }
+
     /**
      * Copys the channel script to a temproary file
+     * 
      * @return the file name of the temporary file.
      */
     private String copyChannelScriptToTmp() {
 	StringBuilder b = new StringBuilder();
-	InputStream is =Connection.class.getResourceAsStream("/mainfile.html");
+	InputStream is = Connection.class.getResourceAsStream("/mainfile.html");
 	BufferedReader bReader = new BufferedReader(new InputStreamReader(is));
 	try {
 	    File tmpFile = File.createTempFile("gaeChannelScript", ".html");
 	    tmpFile.deleteOnExit();
 	    PrintStream out = new PrintStream(tmpFile);
 	    while (bReader.ready()) {
-	        out.println(bReader.readLine());
+		out.println(bReader.readLine());
 	    }
 	    return tmpFile.getAbsolutePath();
 	} catch (IOException e) {
-	    logger.error(NotificationAppender.MARKER,"Could not read Channels Handler file.\nConnection will not work. See logs for details",e);
+	    logger.error(
+		    NotificationAppender.MARKER,
+		    "Could not read Channels Handler file.\nConnection will not work. See logs for details",
+		    e);
 	}
 	return null;
     }
