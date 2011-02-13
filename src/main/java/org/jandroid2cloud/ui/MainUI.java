@@ -103,8 +103,7 @@ public class MainUI {
 	    @Override
 	    public void widgetSelected(SelectionEvent e) {
 		logger.info(NotificationAppender.MARKER,"Reconnecting now");
-		JAndroid2Cloud.connection.close();
-		JAndroid2Cloud.connection.open();
+		JAndroid2Cloud.connection.reconnect();
 	    }
 	});
 	
