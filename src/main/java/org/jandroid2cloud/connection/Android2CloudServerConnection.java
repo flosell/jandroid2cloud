@@ -26,6 +26,7 @@ package org.jandroid2cloud.connection;
 
 import org.GAEChannel4j.Connection;
 import org.eclipse.swt.widgets.Display;
+import org.jandroid2cloud.JAndroid2Cloud;
 import org.jandroid2cloud.configuration.Configuration;
 import org.jandroid2cloud.exceptions.NetworkException;
 import org.jandroid2cloud.ui.notifications.NotificationAppender;
@@ -116,6 +117,19 @@ public class Android2CloudServerConnection {
 	logger.info("Closing connection");
 	connection.close();
 	// TODO: find out if server supports a close command
+    }
+
+    public void reauth() {
+	config.setToken("");
+	config.setSecret("");
+	oauth = new OAuthTool(config);
+	JAndroid2Cloud.connection.close();
+	JAndroid2Cloud.connection.open();
+    }
+    
+    public void reconnect() {
+	close();
+	open();
     }
 
 }

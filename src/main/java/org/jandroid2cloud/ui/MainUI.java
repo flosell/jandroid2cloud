@@ -45,6 +45,7 @@ import org.eclipse.swt.widgets.ToolTip;
 import org.eclipse.swt.widgets.Tray;
 import org.eclipse.swt.widgets.TrayItem;
 import org.jandroid2cloud.JAndroid2Cloud;
+import org.jandroid2cloud.configuration.Configuration;
 import org.jandroid2cloud.ui.notifications.NotificationAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,6 +107,17 @@ public class MainUI {
 		JAndroid2Cloud.connection.open();
 	    }
 	});
+	
+	item = new MenuItem(menu, SWT.PUSH);
+	item.setText("Relogin");
+	item.addSelectionListener(new SelectionAdapter() {
+	    @Override
+	    public void widgetSelected(SelectionEvent e) {
+		logger.info(NotificationAppender.MARKER,"Cleared session data. Requesting new login.");
+		JAndroid2Cloud.connection.reauth();
+	    }
+	});
+	
 
 	item = new MenuItem(menu, SWT.PUSH);
 	item.setText("Exit");
