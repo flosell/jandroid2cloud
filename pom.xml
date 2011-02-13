@@ -18,7 +18,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jandroid2cloud</groupId>
 	<artifactId>jandroid2cloud</artifactId>
-	<version>0.2alpha</version>
+	<version>0.2alpha2</version>
 	<properties>
 		<swt.artifactId>swt-gtk-linux</swt.artifactId>
 		<swt.classifier>x86</swt.classifier>
