@@ -337,5 +337,12 @@ public class Configuration {
     public long getTimeBetweenReconnects() {
 	return 60000;
     }
+    /**
+     * This method returns the time until a connection test fails
+     * @return the number of mseconds to wait for connection reply.
+     */
+    public long getTimeoutForConnectionTest() {
+	return 5000;
+    }
 
 }

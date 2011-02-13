@@ -24,11 +24,18 @@
 
 package org.jandroid2cloud.connection;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URLEncoder;
+
 import org.GAEChannel4j.Connection;
 import org.eclipse.swt.widgets.Display;
 import org.jandroid2cloud.JAndroid2Cloud;
 import org.jandroid2cloud.configuration.Configuration;
 import org.jandroid2cloud.exceptions.NetworkException;
+import org.jandroid2cloud.http.HTTPConnectionHelper;
+import org.jandroid2cloud.http.HTTPResult;
 import org.jandroid2cloud.ui.notifications.NotificationAppender;
 import org.scribe.model.Verb;
 import org.slf4j.Logger;
@@ -46,6 +53,7 @@ public class Android2CloudServerConnection {
     private Connection connection;
     private OAuthTool oauth;
     private Display display;
+    private ChannelHandler handler;
     private static final Logger logger = LoggerFactory
 	    .getLogger(Android2CloudServerConnection.class);
 
@@ -97,13 +105,14 @@ public class Android2CloudServerConnection {
      */
     private void openInternal() throws NetworkException {
 	logger.info("Opening connection to Android2Cloud server " + config.getHost());
-	String channelToken = oauth.makeRequest("http://" + config.getHost() + "/getToken", Verb.GET,
-		null);
+	String channelToken = oauth.makeRequest("http://" + config.getHost() + "/getToken",
+		Verb.GET, null);
 	logger.debug("Received channelToken:" + channelToken);
 
 	if (connection == null) {
 	    connection = new Connection(channelToken, display);
-	    connection.setHandler(new ChannelHandler(config, oauth));
+	    handler = new ChannelHandler(config, oauth);
+	    connection.setHandler(handler);
 	}
 	connection.open();
 	logger.info("Connection is up and running. Waiting for messages from server.");
@@ -126,10 +135,40 @@ public class Android2CloudServerConnection {
 	JAndroid2Cloud.connection.close();
 	JAndroid2Cloud.connection.open();
     }
-    
+
     public void reconnect() {
 	close();
 	open();
+    }
+
+    public void checkConnection() {
+	String link = Long.toHexString(Double.doubleToLongBits(Math.random()));
+	handler.setLinkToWaitFor(link);
+	try {
+	    sendLink(link);
+	    logger.info(NotificationAppender.MARKER, "Sent link to myself. Waiting for response");
+	    boolean success = handler.waitForLink(link);
+	    if (success) {
+		logger.info(NotificationAppender.MARKER,
+		"Received response from server.\nConnection is OK");
+	    } else {
+		logger.error(NotificationAppender.MARKER,
+		"Did not receive response from server.\nConnection is LOST\nTry reconnection...");
+	    }
+	} catch (UnsupportedEncodingException e) {
+	    logger.error(NotificationAppender.MARKER,"Could not encode testing link.\nThis is probably a bug. Please contact the developers",e);
+	} catch (NetworkException e) {
+	    logger.error(NotificationAppender.MARKER,"Could not send testing link.\nYou network is probably down.",e);
+	}
+
+    }
+
+    private void sendLink(String link) throws UnsupportedEncodingException, NetworkException {
+	link = URLEncoder.encode(link, "UTF-8");
+	String path = "http://" + config.getHost() + "/addlink?link=" + link
+		+ "&name=foo&recipient=" + config.getIdentifier();
+	String result = oauth.makeRequest(path, Verb.POST, null);
+	logger.debug("sent link. result:" + result);
     }
 
 }

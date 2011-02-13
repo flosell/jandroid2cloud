@@ -35,6 +35,6 @@ public class ChannelHandlerAdapter implements IChannelHandler {
     public void close() {
     }
 
-    public void error(String description, int code) {
+    public void error(String description, double code) {
     }
 }

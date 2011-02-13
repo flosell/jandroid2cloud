@@ -28,5 +28,5 @@ public interface IChannelHandler {
     public void open();
     public void message(String msg);
     public void close();
-    public void error(String description, int code); 
+    public void error(String description, double code); 
 }

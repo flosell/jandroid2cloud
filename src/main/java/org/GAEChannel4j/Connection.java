@@ -160,10 +160,10 @@ public class Connection {
 			    desc = (String) arguments[0];
 			}
 			logger.debug("error: got desc:" + desc);
-			int code = -1;
+			double code = -1;
 			if (arguments.length > 1) {
 			    try {
-				code = Integer.parseInt((String) arguments[1]);
+				code =(Double) arguments[1];
 			    } catch (Exception e) {
 				logger.error("somethings wrong with getting the error code.", e);
 			    }

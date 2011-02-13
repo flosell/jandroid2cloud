@@ -27,6 +27,8 @@ package org.jandroid2cloud.connection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.plaf.basic.BasicBorders.MarginBorder;
 
@@ -49,6 +51,11 @@ public class ChannelHandler implements IChannelHandler {
     private Configuration config;
     private OAuthTool oauth;
     private static final Logger logger = LoggerFactory.getLogger(ChannelHandler.class);
+
+    private String waitingFor;
+    private Semaphore waitingForSema = new Semaphore(0);
+    private boolean received = false;
+
     public ChannelHandler(Configuration config, OAuthTool oauth) {
 	this.config = config;
 	this.oauth = oauth;
@@ -56,21 +63,25 @@ public class ChannelHandler implements IChannelHandler {
 
     @Override
     public void open() {
-	logger.info(NotificationAppender.MARKER,"Server confirmed: Channel is open");
-	String username="";
+	logger.info(NotificationAppender.MARKER, "Server confirmed: Channel is open");
+	String username = "";
 	try {
-	    username = oauth.makeRequest("http://" + config.getHost() + "/connected/"
-	    	+ config.getIdentifier(), Verb.POST, null);
+	    username = oauth.makeRequest(
+		    "http://" + config.getHost() + "/connected/" + config.getIdentifier(),
+		    Verb.POST, null);
 	} catch (NetworkException e) {
-	    logger.error(NotificationAppender.MARKER, "Error: Channel to server is open but connection could not be confirmed.\nNo messages will be received",e);
+	    logger.error(
+		    NotificationAppender.MARKER,
+		    "Error: Channel to server is open but connection could not be confirmed.\nNo messages will be received",
+		    e);
 	}
-	logger.debug("Using username"+username);
+	logger.debug("Using username" + username);
     }
 
     @Override
     public void message(String rawMsg) {
-	logger.debug("Received message from server:"+rawMsg);
-	
+	logger.debug("Received message from server:" + rawMsg);
+
 	try {
 	    JSONObject jsonMessage = new JSONObject(new JSONTokener(rawMsg));
 	    JSONObject links = (JSONObject) jsonMessage.opt("links");
@@ -96,9 +107,9 @@ public class ChannelHandler implements IChannelHandler {
 	} catch (JSONException e) {
 	    e.printStackTrace();
 	} catch (NetworkException e) {
-	    logger.error(NotificationAppender.MARKER,"Could not mark links as read.\n" +
-	    		"You will not receive more links until that is done.\n" +
-	    		"See log for details",e);
+	    logger.error(NotificationAppender.MARKER, "Could not mark links as read.\n"
+		    + "You will not receive more links until that is done.\n"
+		    + "See log for details", e);
 	}
     }
 
@@ -107,9 +118,13 @@ public class ChannelHandler implements IChannelHandler {
 	    link = link.getJSONObject("link");
 	}
 	String url = link.getString("url");
-	logger.info(NotificationAppender.MARKER,"new link "+url+" received.");
-//	config.openURLinBrowser(url);
-	LinkQueue.INSTANCE.push(url);
+	if (url.equals(waitingFor)) {
+	    received = true;
+	    waitingForSema.release(1);
+	} else {
+	    logger.info(NotificationAppender.MARKER, "new link " + url + " received.");
+	    LinkQueue.INSTANCE.push(url);
+	}
     }
 
     @Override
@@ -118,8 +133,24 @@ public class ChannelHandler implements IChannelHandler {
     }
 
     @Override
-    public void error(String description, int code) {
+    public void error(String description, double code) {
 	logger.error("error " + code + ": " + description);
+    }
+
+    public boolean waitForLink(String sentLink) {
+	try {
+	    waitingForSema.tryAcquire(config.getTimeoutForConnectionTest(), TimeUnit.MILLISECONDS);
+	} catch (InterruptedException e) {
+	    logger.warn(
+		    "waiting for server response in connection test was interrupted. This may result in the false assumption that the connection was lost.",
+		    e);
+	}
+	return received;
+    }
+    
+    public void setLinkToWaitFor(String link) {
+	received = false;
+	waitingFor = link;
     }
 
 }

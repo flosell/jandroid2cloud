@@ -117,7 +117,19 @@ public class MainUI {
 	    }
 	});
 	
-
+	item = new MenuItem(menu, SWT.PUSH);
+	item.setText("Check connection");
+	item.addSelectionListener(new SelectionAdapter() {
+	    @Override
+	    public void widgetSelected(SelectionEvent e) {
+		new Thread("ConnectionChecker") {
+		    public void run() {
+			JAndroid2Cloud.connection.checkConnection();
+		    };
+		}.start();
+	    }
+	});
+	
 	item = new MenuItem(menu, SWT.PUSH);
 	item.setText("Exit");
 	item.addSelectionListener(new SelectionAdapter() {
