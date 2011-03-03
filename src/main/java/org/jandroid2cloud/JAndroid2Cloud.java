@@ -40,6 +40,7 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.FileAppender;
 
@@ -76,25 +77,20 @@ public class JAndroid2Cloud {
 
     private static void configureLogger(String[] args) {
 	ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+	Appender<ILoggingEvent> fileAppender = rootLogger.getAppender("FILEAPPENDER");
+
 	for (int i=0;i<args.length;i++) {
 	    if (args[i].equalsIgnoreCase("-debug")) {
 		rootLogger.setLevel(Level.DEBUG);
 	    }
-	    if (args[i].equalsIgnoreCase("-logfile")) {
-		// TODO: this does not work
-		FileAppender<ILoggingEvent> fileAppender = new FileAppender<ILoggingEvent>();
-		PatternLayoutEncoder encoder =new PatternLayoutEncoder();
-		encoder.setPattern("%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n");
-		fileAppender.setEncoder(encoder);
-		String filename = args[++i]; 
-		Context context = rootLogger.getLoggerContext();
-		fileAppender.setContext(context);
-		fileAppender.setFile(filename);
-//		fileAppender.setName("fileAppender");
-		rootLogger.addAppender(fileAppender);
-		boolean b=rootLogger.isAttached(fileAppender);
-		fileAppender.start();
-		logger.debug("logging to file "+filename+" attached: "+b);
+	    if (args[i].equalsIgnoreCase("-logfile") && fileAppender!=null) {
+		if (i+1 < args.length) {
+		    String filename = args[++i];
+		    ((FileAppender<ILoggingEvent>) fileAppender).setFile(filename);
+		    fileAppender.start();
+		}else {
+		    logger.warn("Logfilename missing. No logfile will be written");
+		}
 	    }
 	    
 	}
